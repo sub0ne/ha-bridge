@@ -22,6 +22,10 @@ public class ColorDecode {
 	private static final String COLOR_RGBX = "${color.rgbx}";
 	private static final String COLOR_HSL = "${color.hsl}";
 	private static final Pattern COLOR_MILIGHT = Pattern.compile("\\$\\{color.milight\\:([01234])\\}");
+	private static final String COLOR_CEI = "${color.cei}";
+	private static final String COLOR_HUE = "${color.hue}";
+	private static final String COLOR_SAT = "${color.sat}";
+	private static final String COLOR_BRI = "${color.bri}";
 
 	public static List<Integer> convertHSLtoRGB(HueSatBri hsl) {
 		List<Integer> rgb;
@@ -258,6 +262,13 @@ public class ColorDecode {
 
 		while (notDone) {
 			notDone = false;
+
+			if (request.contains(COLOR_CEI)) {
+				List<Double> cie = (List<Double>) colorData.getData();
+				request = request.replace(COLOR_CEI, String.format("%f,%f", cie.get(0), cie.get(1)));
+				notDone = true;
+			}
+
 			if (request.contains(COLOR_R)) {
 				request = request.replace(COLOR_R,
 						isHex ? String.format("%02X", rgb.get(0)) : String.valueOf(rgb.get(0)));
@@ -297,13 +308,19 @@ public class ColorDecode {
 				notDone = true;
 			}
 
-			if (request.contains(COLOR_HSL)) {
+			if (request.contains(COLOR_HSL) || 
+				request.contains(COLOR_HUE) ||
+				request.contains(COLOR_SAT) ||
+				request.contains(COLOR_BRI)) {
 				float[] hsb = new float[3];
 				Color.RGBtoHSB(rgb.get(0), rgb.get(1), rgb.get(2), hsb);
 				float hue = hsb[0] * (float) 360.0;
 				float sat = hsb[1] * (float) 100.0;
 				float bright = hsb[2] * (float) 100.0;
 				request = request.replace(COLOR_HSL, String.format("%f,%f,%f", hue, sat, bright));
+				request = request.replace(COLOR_HUE, Float.toString(hue));
+				request = request.replace(COLOR_SAT, Float.toString(sat));
+				request = request.replace(COLOR_BRI, Float.toString(bright));
 				notDone = true;
 			}
 
