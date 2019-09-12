@@ -1,6 +1,7 @@
 package com.bwssystems.HABridge.hue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,7 +44,8 @@ public class ColorDecode {
 			decimalBrightness = (float) (hsl.getBri() / 255.0);
 
 		if(hsl.getHue() > 0) {
-			h = ((float)hsl.getHue() / (float)65535.0);
+			// covert hue value from 0 - 65535 to 0 - 360
+			h = ((float)hsl.getHue() / (float)182.04);
 			h2 = h + (float)0.5;
 			if(h2 > 1.0) {
 				h2 = h2 - (float)1.0;
@@ -241,6 +243,24 @@ public class ColorDecode {
 		return value;
 	}
 
+	private static String handleCTRequest(Integer ct, String request) {
+
+		String[] splitRequest = request.split("\\?");
+	
+		String newRequest = splitRequest[0];
+	
+		if (splitRequest.length > 1) {
+		  String[] parameters = splitRequest[1].split("\\&");
+		  String ctParameter = parameters[0].replaceFirst("\\.\\w*\\=\\$\\{\\S*\\}", ".ct=\\$\\{color.ct\\}");
+		  newRequest = newRequest + "?" + ctParameter;
+
+		  newRequest = newRequest.replace("${color.ct}", ct.toString());
+		}
+
+		return newRequest;
+	
+	}
+
 	@SuppressWarnings("unchecked")
 	public static String replaceColorData(String request, ColorData colorData, int setIntensity, boolean isHex) {
 		if (request == null) {
@@ -255,7 +275,7 @@ public class ColorDecode {
 		if (colorMode == ColorData.ColorMode.XY) {
 			rgb = convertCIEtoRGB((List<Double>) colorData.getData(), setIntensity);
 		} else if (colorMode == ColorData.ColorMode.CT) {
-			rgb = convertCTtoRGB((Integer) colorData.getData());
+			return handleCTRequest((Integer) colorData.getData(), request);
 		} else if (colorMode == ColorData.ColorMode.HS) {
 			rgb = convertHSLtoRGB((HueSatBri) colorData.getData());
 		}
@@ -264,7 +284,13 @@ public class ColorDecode {
 			notDone = false;
 
 			if (request.contains(COLOR_CEI)) {
-				List<Double> cie = (List<Double>) colorData.getData();
+
+				List<Double> cie = Arrays.asList((double) 0.0, (double) 0.0);
+
+				if (colorMode == ColorData.ColorMode.XY){
+					cie = (List<Double>) colorData.getData();
+				}
+
 				request = request.replace(COLOR_CEI, String.format("%f,%f", cie.get(0), cie.get(1)));
 				notDone = true;
 			}
@@ -312,11 +338,24 @@ public class ColorDecode {
 				request.contains(COLOR_HUE) ||
 				request.contains(COLOR_SAT) ||
 				request.contains(COLOR_BRI)) {
-				float[] hsb = new float[3];
-				Color.RGBtoHSB(rgb.get(0), rgb.get(1), rgb.get(2), hsb);
-				float hue = hsb[0] * (float) 360.0;
-				float sat = hsb[1] * (float) 100.0;
-				float bright = hsb[2] * (float) 100.0;
+
+				float hue = 0;
+				float sat = 0;
+				float bright = 0;
+
+				if (colorMode == ColorData.ColorMode.HS){
+					HueSatBri hsb = (HueSatBri) colorData.getData();
+					hue = (float)hsb.getHue() / (float)182.04;
+					sat = (float)hsb.getSat();
+					bright = (float)hsb.getBri();
+				} else {
+					float[] hsb = new float[3];
+					Color.RGBtoHSB(rgb.get(0), rgb.get(1), rgb.get(2), hsb);
+					hue = hsb[0] * (float) 360.0;
+					sat = hsb[1] * (float) 100.0 + 155;
+					bright = hsb[2] * (float) 100.0 + 155;
+				}
+				
 				request = request.replace(COLOR_HSL, String.format("%f,%f,%f", hue, sat, bright));
 				request = request.replace(COLOR_HUE, Float.toString(hue));
 				request = request.replace(COLOR_SAT, Float.toString(sat));
