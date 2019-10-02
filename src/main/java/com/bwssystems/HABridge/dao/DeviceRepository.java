@@ -71,8 +71,8 @@ public class DeviceRepository extends BackupHandler {
 				else
 					list[i].setDeviceState(DeviceState.createDeviceState(true));
 				put(list[i].getId(), list[i]);
-				if (Integer.decode(list[i].getId()) > nextId) {
-					nextId = Integer.decode(list[i].getId());
+				if (Integer.decode(list[i].getId()) >= nextId) {
+					nextId = Integer.decode(list[i].getId()) + 1;
 				}
 			}
 		}
