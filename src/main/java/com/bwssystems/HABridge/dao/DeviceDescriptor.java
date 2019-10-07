@@ -358,10 +358,7 @@ public class DeviceDescriptor{
 	}
 
 	public boolean isLight() {
-		return this.getDeviceType().equals(DeviceTypes.DEVICE_TYPE_DIMMABLE_LIGHT) || 
-		       this.getDeviceType().equals(DeviceTypes.DEVICE_TYPE_EXTENDED_COLOR_LIGHT) || 
-			   this.getDeviceType().equals(DeviceTypes.DEVICE_TYPE_ON_OFF_LIGHT) || 
-			   this.getDeviceType().equals(DeviceTypes.DEVICE_TYPE_SWITCH);
+		return DeviceTypes.DEVICE_TYPE_LIST_LIGHTS.contains(this.getDeviceType());
 	}
 
 }
