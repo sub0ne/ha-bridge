@@ -911,7 +911,7 @@ public class HueMulator {
 			deviceResponseMap = new HashMap<String, DeviceResponse>();
 			for (DeviceDescriptor device : deviceList) {
 				DeviceResponse deviceResponse = null;
-				if (!device.isInactive()) {
+				if (device.isLight() && !device.isInactive()) {
 					if (device.containsType(DeviceMapTypes.HUE_DEVICE[DeviceMapTypes.typeIndex])) {
 						CallItem[] callItems = null;
 						try {

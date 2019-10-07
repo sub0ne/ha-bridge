@@ -17,6 +17,7 @@ public class DeviceResponse {
     private String swversion;
     private String swconfigid;
     private String productid;
+	private Boolean hascolor;
 
     public DeviceState getState() {
         return state;
@@ -90,6 +91,13 @@ public class DeviceResponse {
         this.productid = productid;
     }
 
+    public void setHasColor(boolean hasColor) {
+        this.hascolor = Boolean.valueOf(hasColor);
+    }
+
+    public Boolean getHasColor(){
+        return this.hascolor;
+    }
 
     public String getLuminaireuniqueid() {
 		return luminaireuniqueid;
@@ -99,30 +107,61 @@ public class DeviceResponse {
 		this.luminaireuniqueid = luminaireuniqueid;
 	}
 
-	public static DeviceResponse createResponse(DeviceDescriptor device){
+	public static DeviceResponse createResponse(DeviceDescriptor device) {
         DeviceResponse response = new DeviceResponse();
         response.setState(device.getDeviceState());
 
         response.setName(device.getName());
         response.setUniqueid(device.getUniqueid());
-        response.setManufacturername("Philips");
-            
-        if (device.isColorDevice()) {
-            response.setType("Extended color light");
-            response.setModelid("LCT010");
-            response.setSwversion("1.15.2_r19181");
-            response.setSwconfigid("F921C859");
-            response.setProductid("Philips-LCT010-1-A19ECLv4");    
-        } else {
-            response.setType("Dimmable light");
-            response.setModelid("LWB007");
-            response.setSwversion("66012040");
-        }
+        
+        switch (device.getDeviceType()) {
+            case DeviceTypes.DEVICE_TYPE_ON_OFF_LIGHT:
+                addOnOffLightResponseData(response);
+                break;
+            case DeviceTypes.DEVICE_TYPE_EXTENDED_COLOR_LIGHT: 
+                addExtendedColorLightResponseData(response);
+                break;
+            case DeviceTypes.DEVICE_TYPE_DIMMABLE_LIGHT:
+                addDimmableLightResponseData(response);
+                break;
+            case DeviceTypes.DEVICE_TYPE_SWITCH:
+                addSwitchResponseData(response);
+                break;
+        }        
         
         response.setLuminaireuniqueid(null);
 
         return response;
     }
+
+    public static void addExtendedColorLightResponseData(DeviceResponse response) {
+        response.setManufacturername("Philips");
+        response.setType("Extended color light");
+        response.setModelid("LCT010");
+        response.setSwversion("1.15.2_r19181");
+        response.setSwconfigid("F921C859");
+        response.setProductid("Philips-LCT010-1-A19ECLv4"); 
+    }
+
+    public static void addDimmableLightResponseData(DeviceResponse response) {
+        response.setManufacturername("Philips");
+        response.setType("Dimmable light");
+        response.setModelid("LWB007");
+        response.setSwversion("66012040");       
+    }
+
+    public static void addOnOffLightResponseData(DeviceResponse response) {
+        response.setManufacturername("Philips");
+        response.setHasColor(false);        
+    }
+
+    public static void addSwitchData(DeviceResponse response){
+        response.setType("On/Off plug-in unit");
+        response.setSwversion("2.0"); 
+        response.setModelid("SP 120");
+        response.setManufacturername("innr");
+        response.setHasColor(false);        
+    }  
 
     public static DeviceResponse createResponseForVirtualLight(GroupDescriptor group){
         DeviceResponse response = new DeviceResponse();

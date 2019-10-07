@@ -1,6 +1,7 @@
 package com.bwssystems.HABridge.dao;
 
 import com.bwssystems.HABridge.api.hue.DeviceState;
+import com.bwssystems.HABridge.api.hue.DeviceTypes;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -355,4 +356,12 @@ public class DeviceDescriptor{
 	public void setStartupActions(String startupActions) {
 		this.startupActions = startupActions;
 	}
+
+	public boolean isLight() {
+		return this.getDeviceType().equals(DeviceTypes.DEVICE_TYPE_DIMMABLE_LIGHT) || 
+		       this.getDeviceType().equals(DeviceTypes.DEVICE_TYPE_EXTENDED_COLOR_LIGHT) || 
+			   this.getDeviceType().equals(DeviceTypes.DEVICE_TYPE_ON_OFF_LIGHT) || 
+			   this.getDeviceType().equals(DeviceTypes.DEVICE_TYPE_SWITCH);
+	}
+
 }
